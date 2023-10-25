@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: freshdb
+spec:
+  serviceName: freshdb
+  replicas: 1
+  template:
+    spec:
+      imagePullSecrets:
+        - name: gitlab-credentials
+      containers:
+        - image: #_PRIVATE_#
+          imagePullPolicy: Always
+          name: freshdb
+          ports:
+            - containerPort: 3306
+              name: freshdb
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: #_PRIVATE_#
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 200m
+              memory: 2Gi
+          volumeMounts:
+            - name: import
+              mountPath: /mnt/import
+  volumeClaimTemplates:
+    - metadata:
+        name: import
+      spec:
+        selector:
+          matchLabels:
+            name: import-pv
+        accessModes: [ "ReadWriteMany" ]
+        storageClassName: local-storage
+        resources:
+          requests:
+            storage: 2Gi
+  

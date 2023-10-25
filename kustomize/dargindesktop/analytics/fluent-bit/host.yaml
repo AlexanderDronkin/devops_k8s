@@ -1,0 +1,9 @@
+# Source: fluent-bit/templates/service.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fluent-domain
+spec:
+  type: ExternalName
+  externalName: local

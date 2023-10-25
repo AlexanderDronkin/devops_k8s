@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: in8n
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 512m
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: local.podrujkashop.ru
+      http:
+        paths:
+          - path: /n8n(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: n8n-svc
+                port: 
+                  number: 5678
+  tls:
+    - secretName: ssl-cert-secret
+      hosts:
+        - local.podrujkashop.ru

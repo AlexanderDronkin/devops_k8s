@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: locations-all
+  namespace: default
+spec:
+  template:
+    spec:
+      imagePullSecrets:
+        - name: gitlab-credentials
+      containers:
+      - name: locations
+        image: #_PRIVATE_#
+        imagePullPolicy: Always
+        env:
+          - name: DIR
+            value: /mnt/
+          - name: DSN_MYSQL
+            value: #_PRIVATE_#
+          - name: DSN_MONGO
+            value: #_PRIVATE_#
+        command:
+          - "/locations"
+        args:
+          - "--load"
+          - "--write"
+          - "city"
+          - "zones"
+          - "pvz"
+        volumeMounts:
+          - mountPath: /mnt
+            name: exportpv
+      restartPolicy: Never
+      volumes:
+        - name: exportpv
+          hostPath:
+            path: /mnt/k8s/api
+  backoffLimit: 0

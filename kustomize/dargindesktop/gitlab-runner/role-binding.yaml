@@ -1,0 +1,18 @@
+# Source: gitlab-runner/templates/role-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: "ClusterRoleBinding"
+metadata:
+  name: runner-gitlab-runner
+  labels:
+    app: runner-gitlab-runner
+    chart: gitlab-runner-0.51.0
+    release: "runner"
+    heritage: "Helm"
+  namespace: web
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: "ClusterRole"
+  name: runner-gitlab-runner
+subjects:
+  - kind: ServiceAccount
+    name: runner-gitlab-runner

@@ -1,0 +1,114 @@
+# Source: gitlab-runner/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: runner-gitlab-runner
+  labels:
+    app: runner-gitlab-runner
+    chart: gitlab-runner-0.51.0
+    release: "runner"
+    heritage: "Helm"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: runner-gitlab-runner
+  template:
+    metadata:
+      labels:
+        app: runner-gitlab-runner
+        chart: gitlab-runner-0.51.0
+        release: "runner"
+        heritage: "Helm"
+      annotations:
+        checksum/configmap: fa7ba0d8907cf9b7a2868fbb4fca225e2477a4ae7cd5cc758566acf6fac63dbc
+        checksum/secrets: 5da0ae769b7e356cb14cf435fddb56bb4ca07ccba26a33f57de8b9649116df5d
+    spec:
+      securityContext:
+        fsGroup: 65533
+        runAsUser: 100
+      terminationGracePeriodSeconds: 3600
+      serviceAccountName: runner-gitlab-runner
+      containers:
+        - name: runner-gitlab-runner
+          image: registry.gitlab.com/gitlab-org/gitlab-runner:alpine-v15.10.0
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            allowPrivilegeEscalation: true
+            capabilities:
+              drop:
+                - ALL
+            privileged: true
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/entrypoint", "unregister", "--all-runners"]
+          command:
+            ["/usr/bin/dumb-init", "--", "/bin/bash", "/configmaps/entrypoint"]
+          env:
+            - name: CI_SERVER_URL
+              value: "https://gitlab.com/"
+            - name: CLONE_URL
+              value: ""
+            - name: RUNNER_EXECUTOR
+              value: "kubernetes"
+            - name: REGISTER_LOCKED
+              value: "true"
+            - name: RUNNER_TAG_LIST
+              value: ""
+          livenessProbe:
+            exec:
+              command: ["/bin/bash", "/configmaps/check-live"]
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command: ["/usr/bin/pgrep", "gitlab.*runner"]
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          ports:
+            - name: "metrics"
+              containerPort: 9252
+          volumeMounts:
+            - name: projected-secrets
+              mountPath: /secrets
+            - name: etc-gitlab-runner
+              mountPath: /home/gitlab-runner/.gitlab-runner
+            - name: configmaps
+              mountPath: /configmaps
+          resources:
+            requests:
+              cpu: 100m
+              memory: 4Gi
+            limits:
+              cpu: 300m
+              memory: 8Gi
+      volumes:
+        - name: runner-secrets
+          emptyDir:
+            medium: "Memory"
+        - name: etc-gitlab-runner
+          emptyDir:
+            medium: "Memory"
+        - name: projected-secrets
+          projected:
+            sources:
+              - secret:
+                  name: "runner-gitlab-runner"
+                  items:
+                    - key: runner-registration-token
+                      path: runner-registration-token
+                    - key: runner-token
+                      path: runner-token
+        - name: configmaps
+          configMap:
+            name: runner-gitlab-runner

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: metalapi
+spec:
+  serviceName: metalapi
+  replicas: 1
+  template:
+    spec:
+      imagePullSecrets:
+        - name: gitlab-credentials
+      containers:
+        - image: #_PRIVATE_#
+          imagePullPolicy: Always
+          name: metalapi
+          ports:
+            - containerPort: 8881
+              name: metalapi-api
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx/conf.d
+            - name: apipv
+              mountPath: /var/www/html
+      volumes:
+        - name: config
+          configMap:
+            name: nginx-config
+  volumeClaimTemplates:
+    - metadata:
+        name: apipv
+      spec:
+        selector:
+          matchLabels:
+            name: api-pv
+        accessModes: [ "ReadWriteMany" ]
+        storageClassName: local-storage
+        resources:
+          requests:
+            storage: 50Gi
+  

@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: imetalapi
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 512m
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: local.podrujkashop.ru
+      http:
+        paths:
+          - path: /api(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: metalapi-svc
+                port: 
+                  number: 8881
+  tls:
+    - secretName: ssl-cert-secret
+      hosts:
+        - local.podrujkashop.ru

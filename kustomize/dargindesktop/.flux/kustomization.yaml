@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+generatorOptions:
+  disableNameSuffixHash: true
+secretGenerator:
+- envs:
+  - .flux.token
+  name: gitlab-flux
+  namespace: flux-system
+- envs:
+  - .flux.token
+  name: flux-token
+  namespace: web
+- envs:
+  - .gitlab.token
+  name: gitlab-credentials
+  namespace: web
+  type: kubernetes.io/dockerconfigjson
+- files:
+  - cert/tls.crt
+  - cert/tls.key
+  name: ssl-cert-secret
+  namespace: default
+  type: kubernetes.io/tls
+resources:
+- source.yaml
+- kustomize.yaml
+- namespace.yaml

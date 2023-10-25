@@ -1,0 +1,14 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: cloud
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  path: /kustomize/dargindesktop
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: web
+    namespace: flux-system
+  targetNamespace: web

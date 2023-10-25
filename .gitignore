@@ -1,0 +1,30 @@
+# dot.env
+.env
+
+# secrets
+*.token
+
+# archives
+*.gz
+
+src/locations/city
+src/locations/locations
+src/locations/build
+src/imbi/imbi
+src/user/user
+run
+
+# vendors
+node_modules
+vendor
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
+.prettierrc.js
+.DS_Store

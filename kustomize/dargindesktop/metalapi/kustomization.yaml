@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: default
+generatorOptions:
+  disableNameSuffixHash: true
+configMapGenerator:
+  - files:
+      - config/cloud.conf
+    name: nginx-config
+resources:
+  - statefullset.yaml
+  - ingress.yaml
+  - service.yaml
+labels:
+  - includeSelectors: true
+    pairs:
+      app: api

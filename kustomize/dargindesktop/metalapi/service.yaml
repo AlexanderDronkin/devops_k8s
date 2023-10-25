@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metalapi-svc
+spec:
+  ports:
+    - protocol: TCP
+      name: metalapi-api
+      port: 8881
+      targetPort: 8881
